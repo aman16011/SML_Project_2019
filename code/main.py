@@ -1,6 +1,5 @@
 import numpy as np
 from glob import glob
-from MIclass import *
 from helper_function import *
 
 # Dataset extraction
