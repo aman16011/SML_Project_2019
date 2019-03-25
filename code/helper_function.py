@@ -1,4 +1,6 @@
 # all functions go here.
+import glob
+
 def get_data(folder_path):
 
     files = glob(folder_path+"*")
