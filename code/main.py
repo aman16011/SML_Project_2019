@@ -1,4 +1,5 @@
 import numpy as np
+from glob import glob
 
 class MotorImageryDataset:
     def __init__(self, dataset='./data/A01T.npz'):
@@ -20,7 +21,7 @@ class MotorImageryDataset:
         # Types of motor imagery
         self.mi_types = {769: 'left', 770: 'right', 771: 'foot', 772: 'tongue', 783: 'unknown'}
 
-    def get_trials_from_channel(self, channel=7):
+    def get_trials_from_channel(self, channel=3):
 
         # Channel default is C3
 
@@ -46,8 +47,30 @@ class MotorImageryDataset:
 
         return trials, classes
 
-datasetA1 = MotorImageryDataset()
-trials, classes = datasetA1.get_trials_from_channel()
-print(len(trials),len(trials[0]),len(trials))
-print(len(classes))
+def get_data(folder_path):
 
+    files = glob(folder_path+"*")
+    X = []
+    Y = []
+    for file in files:
+        print(file)
+        ImageryDataset = MotorImageryDataset(file)
+        trials, classes = ImageryDataset.get_trials_from_channel(1)
+        X_temp = trials
+        Y_temp = classes
+        print(len(X_temp),len(X_temp[0]),len(Y_temp))
+        for i in range(2,23):
+            trials, classes = ImageryDataset.get_trials_from_channel()
+            X_temp = np.concatenate([X_temp,trials],axis = 1)
+        print(len(X_temp),len(X_temp[0]),len(Y_temp))
+        if len(X) == 0:
+            X = X_temp
+            Y = Y_temp
+        else:
+            X = np.append(X,X_temp,0)
+            Y = np.append(Y,Y_temp)
+
+    return X,Y
+
+X,Y = get_data("./data/")
+print(len(X),len(Y),len(X[0]))
