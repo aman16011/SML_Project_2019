@@ -3,11 +3,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import StratifiedKFold
 import glob
+from scipy.signal import butter,lfilter
 
 # Data Loader
 def get_data(folder_path):
 
-    files = glob(folder_path+"*")
+    files = glob.glob(folder_path+"*")
     X = []
     Y = []
     for file in files:
@@ -18,7 +19,7 @@ def get_data(folder_path):
         Y_temp = classes
         print(len(X_temp),len(X_temp[0]),len(Y_temp))
         for i in range(2,23):
-            trials, classes = ImageryDataset.get_trials_from_channel()
+            trials, classes = ImageryDataset.get_trials_from_channel(i)
             X_temp = np.concatenate([X_temp,trials],axis = 1)
         print(len(X_temp),len(X_temp[0]),len(Y_temp))
         if len(X) == 0:
@@ -58,3 +59,15 @@ def stratified_K_fold(split,X,Y):
         print(len(X_train_temp),"Training size",len(X_val_temp),"validation size")
 
     return X_train,Y_train,X_val,Y_val
+
+def butter_bandpass(lowcut, highcut, fs, order=5):
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    return b, a
+
+def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
+    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
