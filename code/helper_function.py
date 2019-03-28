@@ -159,6 +159,13 @@ def get_result(X_train,Y_train,X_val,Y_val):
     Y_train_pred = model_lda.predict(X_train_lda)
     print("Train accuracy of LDA over PCA",accuracy_score(Y_train_pred,Y_train)) 
     print("Val accuracy of LDA over PCA",accuracy_score(model_lda.predict(X_val_lda),Y_val))
+    
+    #KPCA
+    model_pca = learn_LR_classifier(X_train_KPCA,Y_train)
+    Y_train_pred = model_pca.predict(X_train_KPCA)
+    print("Train accuracy of KPCA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of KPCA",accuracy_score(model_pca.predict(X_val_KPCA),Y_val))
+
 
     ### NAIVE BAYES
     # PCA results
@@ -188,8 +195,13 @@ def get_result(X_train,Y_train,X_val,Y_val):
     print("Val accuracy of LDA over PCA",accuracy_score(model_lda.predict(X_val_lda),Y_val))
     
     # Kernel PCA
-    X_train_KPCA,X_val_KPCA = KPCA()
-
+    X_train_KPCA,X_val_KPCA = KPCA(X_train, X_val)
+    model_KPCA = learn_naive_bayes_classifier(X_train_KPCA,Y_train)
+    Y_train_pred = model_lda.predict(X_train_KPCA)
+    print("Train accuracy of KPCA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of KPCA",accuracy_score(model_KPCA.predict(X_val_KPCA),Y_val))
+    
+    
 def get_k_fold_result(X_train,Y_train,X_val,Y_val):
 
     for l in range(len(X_train)):
