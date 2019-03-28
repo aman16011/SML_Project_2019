@@ -3,17 +3,29 @@ from glob import glob
 from helper_function import *
 from scipy.signal import welch
 from sklearn.metrics import accuracy_score
-
+import matplotlib.pyplot as plt 
 # # Assigning class labels
 labels = {'tongue':0,'foot':1, 'left':2, 'right':3}
 # Dataset extraction
 X,Y = get_data("../data/") # trials X channels X values
+
+#Showing PSD of 1st subject 1st trial all 22 channels: 
+for i in range(22):
+    f,psd = welch(X)
+    plt.plot(f,psd)
+    plt.savefig('PSD before filtering')
+    
 for l in range(len(Y)):
     Y[l] = labels[Y[l]]
+
 # Pre-processing
 X = preprocess(X)
 
-#??? Visualization of filtered signal - how only one frequency band (8-24Hz) remains now.
+# Visualization of filtered signal - how only one frequency band (8-24Hz) remains now.
+for i in range(22):
+    f,psd = welch(X[0,i,:])
+    plt.plot(f,psd)
+    plt.savefig('PSD before filtering')
 
 # Feature extraction
 # Average Bandpower features [Mu and Beta band power features 8-24Hz with 2Hz binning- 8 bins per channel]

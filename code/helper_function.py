@@ -10,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import StratifiedKFold
 import glob
+from scipy.signal import welch
 from scipy.signal import butter,lfilter
 from MIclass import MotorImageryDataset
 import numpy as np
