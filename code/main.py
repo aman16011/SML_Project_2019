@@ -11,7 +11,7 @@ X,Y = get_data("../data/") # trials X channels X values
 
 #Showing PSD of 1st subject 1st trial all 22 channels: 
 for i in range(22):
-    f,psd = welch(X)
+    f,psd = welch(X[0,i],250)
     plt.plot(f,psd)
     plt.savefig('PSD before filtering')
     
@@ -23,9 +23,9 @@ X = preprocess(X)
 
 # Visualization of filtered signal - how only one frequency band (8-24Hz) remains now.
 for i in range(22):
-    f,psd = welch(X[0,i,:])
+    f,psd = welch(X[0,i,:],250)
     plt.plot(f,psd)
-    plt.savefig('PSD before filtering')
+    plt.savefig('PSD after filtering')
 
 # Feature extraction
 # Average Bandpower features [Mu and Beta band power features 8-24Hz with 2Hz binning- 8 bins per channel]
