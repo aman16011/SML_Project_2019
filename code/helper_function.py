@@ -14,8 +14,8 @@ from scipy.signal import butter,lfilter
 from MIclass import MotorImageryDataset
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.decomposition import KernelPCA 
 from sklearn.discriminant_analysis import  LinearDiscriminantAnalysis
-from sklearn.decomposition import FastICA
 
 # Data Loader
 def get_data(folder_path):
@@ -102,13 +102,98 @@ def lda(X_train,Y_train,X_test):
 
     return X_transform_train,X_transform_test    
 
-def ICA(X_train,Y_train,X_test):
+def KPCA(X_train,X_test):
+    transformer = KernelPCA(kernel='rbf')
+    X_train_trans = transformer.fit_transform(X_train)
+    X_test_trans = transformer.fit_transform(X_test)
+    return X_train_trans, X_test_trans    
 
-    clf = FastICA()
-    clf.fit(X_train,Y_train)
-    X_transform_train = clf.transform(X_train)
-    X_transform_test = clf.transform(X_test)
+def preprocess(X):
+    X_filtered = X.copy()
+    for i in range(len(X[0])):
+        for j in range(22):
+            X_filtered[i,j,:] = butter_bandpass_filter(X[i,j],8,24,250)
+       
+    return X_filtered
 
-    return X_transform_train,X_transform_test
+
+def feature_extraction(X_filtered):
+    X_tr = np.zeros((len(X_filtered),22*8))   
+    for i in range(len(X_filtered)):
+        dum = np.zeros((22,8))
+        for ch in range(22):
+            freqs, psd_vals = welch(X_filtered[i,ch,:],250)
+            dum[ch,0] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=8,freqs<=10))])
+            dum[ch,1] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=10,freqs<=12))])
+            dum[ch,2] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=12,freqs<=14))])
+            dum[ch,3] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=14,freqs<=16))])
+            dum[ch,4] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=16,freqs<=18))])
+            dum[ch,5] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=18,freqs<=20))])
+            dum[ch,6] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=20,freqs<=22))])
+            dum[ch,7] = np.sum(psd_vals[np.argwhere(np.logical_and(freqs>=22,freqs<=24))])        
+        X_tr[i] = dum.reshape(1,22*8)
+    return X_tr
+
+def get_result(X_train,Y_train,X_val,Y_val):
+    X_train_pca,X_val_pca = pca(X_train,X_val)
+    X_train_lda,X_val_lda = lda(X_train,Y_train,X_val)
+    X_train_ica,X_val_ica = ICA(X_train,Y_train,X_val)      
+    
+    ### LOGISTIC REGRESSION
+    # PCA results
+    model_pca = learn_LR_classifier(X_train_pca,Y_train)
+    Y_train_pred = model_pca.predict(X_train_pca)
+    print("Train accuracy of PCA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of PCA",accuracy_score(model_pca.predict(X_val_pca),Y_val))
+
+    # LDA results 
+    model_lda = learn_LR_classifier(X_train_lda,Y_train)
+    Y_train_pred = model_lda.predict(X_train_lda)
+    print("Train accuracy of LDA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of LDA",accuracy_score(model_lda.predict(X_val_lda),Y_val))
+
+
+    # LDA over PCA
+    X_train_lda,X_val_lda = lda(X_train_pca,Y_train,X_val_pca)
+    model_lda = learn_LR_classifier(X_train_lda,Y_train)
+    Y_train_pred = model_lda.predict(X_train_lda)
+    print("Train accuracy of LDA over PCA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of LDA over PCA",accuracy_score(model_lda.predict(X_val_lda),Y_val))
+
+    ### NAIVE BAYES
+    # PCA results
+    
+    model_pca = learn_naive_bayes_classifier(X_train_pca,Y_train)
+    Y_train_pred = model_pca.predict(X_train_pca)
+    print("Train accuracy of PCA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of PCA",accuracy_score(model_pca.predict(X_val_pca),Y_val))
+
+    # LDA results 
+    model_lda = learn_naive_bayes_classifier(X_train_lda,Y_train)
+    Y_train_pred = model_lda.predict(X_train_lda)
+    print("Train accuracy of LDA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of LDA",accuracy_score(model_lda.predict(X_val_lda),Y_val))
+
+    # ICA results
+    model_ica = learn_naive_bayes_classifier(X_train_ica,Y_train)
+    Y_train_pred = model_ica.predict(X_train_ica)
+    print("Train accuracy of ICA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of ICA",accuracy_score(model_ica.predict(X_val_ica),Y_val))
+
+    # LDA over PCA
+    X_train_lda,X_val_lda = lda(X_train_pca,Y_train,X_val_pca)
+    model_lda = learn_naive_bayes_classifier(X_train_lda,Y_train)
+    Y_train_pred = model_lda.predict(X_train_lda)
+    print("Train accuracy of LDA over PCA",accuracy_score(Y_train_pred,Y_train)) 
+    print("Val accuracy of LDA over PCA",accuracy_score(model_lda.predict(X_val_lda),Y_val))
+    
+    # Kernel PCA
+    X_train_KPCA,X_val_KPCA = KPCA()
+
+def get_k_fold_result(X_train,Y_train,X_val,Y_val):
+
+    for l in range(len(X_train)):
+        get_result(X_train[l],Y_train[l],X_val[l],Y_val[l])
+        quit(0)
 
 
