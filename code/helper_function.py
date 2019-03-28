@@ -1,9 +1,21 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 24 13:42:01 2019
+
+@author: Aman Roy
+"""
+
 # all functions go here.
 from sklearn.linear_model import LogisticRegression 
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import StratifiedKFold
 import glob
 from scipy.signal import butter,lfilter
+from MIclass import MotorImageryDataset
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import  LinearDiscriminantAnalysis
+from sklearn.decomposition import FastICA
 
 # Data Loader
 def get_data(folder_path):
@@ -71,3 +83,32 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     b, a = butter_bandpass(lowcut, highcut, fs, order=order)
     y = lfilter(b, a, data)
     return y
+
+def pca(X_train,X_test):
+    
+    clf = PCA(n_components = 20)
+    clf.fit(X_train)
+    X_transform_train = clf.transform(X_train)
+    X_transform_test = clf.transform(X_test)
+
+    return X_transform_train,X_transform_test
+
+def lda(X_train,Y_train,X_test):
+
+    clf = LinearDiscriminantAnalysis()
+    clf.fit(X_train,Y_train)
+    X_transform_train = clf.transform(X_train)
+    X_transform_test = clf.transform(X_test)
+
+    return X_transform_train,X_transform_test    
+
+def ICA(X_train,Y_train,X_test):
+
+    clf = FastICA()
+    clf.fit(X_train,Y_train)
+    X_transform_train = clf.transform(X_train)
+    X_transform_test = clf.transform(X_test)
+
+    return X_transform_train,X_transform_test
+
+
