@@ -11,10 +11,12 @@ X,Y = get_data("../data/") # trials X channels X values
 
 #Showing PSD of 1st subject 1st trial all 22 channels: 
 for i in range(22):
-    f,psd = welch(X[0,i],250)
+    f,psd = welch(X[0,i,:],250)
     plt.plot(f,psd)
     plt.savefig('PSD before filtering.png')
-    
+    plt.xlabel('Frequency(Hz)')
+    plt.ylabel('PSD')
+    plt.title('Power spectral density (Before filtering) for subject 1 trial 1')    
 for l in range(len(Y)):
     Y[l] = labels[Y[l]]
 
@@ -25,6 +27,10 @@ X = preprocess(X)
 for i in range(22):
     f,psd = welch(X[0,i,:],250)
     plt.plot(f,psd)
+    plt.savefig('PSD after filtering.png')
+    plt.xlabel('Frequency(Hz)')
+    plt.ylabel('PSD')
+    plt.title('Power spectral density (After filtering) for subject 1 trial 1')    
     plt.savefig('PSD after filtering.png')
 
 # Feature extraction
