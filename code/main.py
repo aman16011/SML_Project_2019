@@ -13,7 +13,7 @@ X,Y = get_data("../data/") # trials X channels X values
 for i in range(22):
     f,psd = welch(X[0,i],250)
     plt.plot(f,psd)
-    plt.savefig('PSD before filtering')
+    plt.savefig('PSD before filtering.png')
     
 for l in range(len(Y)):
     Y[l] = labels[Y[l]]
@@ -25,7 +25,7 @@ X = preprocess(X)
 for i in range(22):
     f,psd = welch(X[0,i,:],250)
     plt.plot(f,psd)
-    plt.savefig('PSD after filtering')
+    plt.savefig('PSD after filtering.png')
 
 # Feature extraction
 # Average Bandpower features [Mu and Beta band power features 8-24Hz with 2Hz binning- 8 bins per channel]
